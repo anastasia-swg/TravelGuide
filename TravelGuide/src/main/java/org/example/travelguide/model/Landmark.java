@@ -1,0 +1,49 @@
+package org.example.travelguide.model;
+
+public class Landmark {
+    private int id;
+    private String name;
+    private String city;
+    private double latitude;
+    private double longitude;
+    private double Rating;
+
+    public Landmark(int new_id, String new_name, String new_city, double new_latitude, double new_longitude, double Rating){
+        this.id=new_id;
+        this.city=new_city;
+        this.name=new_name;
+        this.latitude=new_latitude;
+        this.longitude=new_longitude;
+        this.Rating=Rating;
+    }
+
+    public Landmark() {}
+
+    public void setRating(){
+        //дописать от триггера из базы данных
+    }
+    public void printAll(){
+        System.out.println("id-" + this.id+
+                "        \ncity-" + this.city+
+                "        \nname-" +this.name+
+                "        \nlatitude-" +this.latitude+
+                "        \nlongitude-" + this.longitude+
+                "        \nrating-"+this.Rating+"\n");
+    }
+
+    public String getName(){return name;}
+
+    public String getCity(){return city;}
+
+    public double getLatitude(){
+        return latitude;
+    }
+
+    public double getLongitude(){
+        return longitude;
+    }
+
+    public double getRating(){ return  Rating;}
+
+
+}
