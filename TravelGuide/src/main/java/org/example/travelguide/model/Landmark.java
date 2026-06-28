@@ -6,15 +6,17 @@ public class Landmark {
     private String city;
     private double latitude;
     private double longitude;
-    private double Rating;
+    private double rating;
+    private String category;
 
-    public Landmark(int new_id, String new_name, String new_city, double new_latitude, double new_longitude, double Rating){
+    public Landmark(int new_id, String new_name, String new_city, double new_latitude, double new_longitude, double Rating, String category){
         this.id=new_id;
         this.city=new_city;
         this.name=new_name;
         this.latitude=new_latitude;
         this.longitude=new_longitude;
-        this.Rating=Rating;
+        this.rating=Rating;
+        this.category= category;
     }
 
     public Landmark() {}
@@ -28,12 +30,17 @@ public class Landmark {
                 "        \nname-" +this.name+
                 "        \nlatitude-" +this.latitude+
                 "        \nlongitude-" + this.longitude+
-                "        \nrating-"+this.Rating+"\n");
+                "        \nrating-"+this.rating+"\n");
+
     }
 
     public String getName(){return name;}
 
     public String getCity(){return city;}
+
+    public int getId(){return id;}
+
+    public String getCategory(){return category;}
 
     public double getLatitude(){
         return latitude;
@@ -43,7 +50,7 @@ public class Landmark {
         return longitude;
     }
 
-    public double getRating(){ return  Rating;}
+    public double getRating(){ return  rating;}
 
 
 }

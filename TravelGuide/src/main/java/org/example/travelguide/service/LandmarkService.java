@@ -11,6 +11,7 @@ import java.util.List;
 @Service
 public class LandmarkService {
     private JdbcTemplate jdbcTemplate;
+    
 
     public List<Landmark> sorted(String sql) {
         return jdbcTemplate.query(sql, (rs, rowNum) ->
@@ -20,12 +21,13 @@ public class LandmarkService {
                         rs.getString("city"),
                         rs.getDouble("latitude"),
                         rs.getDouble("longitude"),
-                        rs.getDouble("avg_rating")
+                        rs.getDouble("avg_rating"),
+                        rs.getString("category")
                 )
         );
     }
 
-    public List<Landmark> getLandmarksSortedByRating(int limit) {
+    public List<Landmark> getLandmarksSortedByRating(int limit, String category) {
         String sql = "SELECT * FROM get_landmarks_sorted_by_rating(" + limit + ")";
         return jdbcTemplate.query(sql, (rs, rowNum) ->
                 new Landmark(
@@ -34,12 +36,13 @@ public class LandmarkService {
                         rs.getString("city"),
                         rs.getDouble("latitude"),
                         rs.getDouble("longitude"),
-                        rs.getDouble("avg_rating")
+                        rs.getDouble("avg_rating"),
+                        rs.getString("category")
                 )
         );
     }
 
-    public List<Landmark> getLandmarksSortedByDistance(double lat, double lon, double radius) {
+    public List<Landmark> getLandmarksSortedByDistance(double lat, double lon, double radius, String category) {
         String sql = "SELECT * FROM get_landmarks_sorted_by_distance(" + lat + ", " + lon + ", " + radius + ")";
         return jdbcTemplate.query(sql, (rs, rowNum) ->
                 new Landmark(
@@ -48,7 +51,8 @@ public class LandmarkService {
                         rs.getString("city"),
                         rs.getDouble("latitude"),
                         rs.getDouble("longitude"),
-                        rs.getDouble("avg_rating")
+                        rs.getDouble("avg_rating"),
+                        rs.getString("category")
                 )
         );
     }
@@ -62,7 +66,8 @@ public class LandmarkService {
                             rs.getString("city"),
                             rs.getDouble("latitude"),
                             rs.getDouble("longitude"),
-                            rs.getDouble("avg_rating")
+                            rs.getDouble("avg_rating"),
+                            rs.getString("category")
                     )
             );
         } catch (Exception e) {
