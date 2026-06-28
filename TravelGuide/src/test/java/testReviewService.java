@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.jdbc.core.JdbcTemplate;
-
+import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -21,11 +21,14 @@ class testReviewService {
 
     @Mock
     private UserService userService;
-
-    @InjectMocks
     private ReviewService reviewService;
 
-    // ✅ Тест 1: Добавление нового отзыва
+    @BeforeEach
+    void setUp() {
+        reviewService = new ReviewService(jdbcTemplate, userService);
+    }
+
+    // Тест - добавление нового отзыва
     @Test
     void addReview_NewReview_ShouldInsert() {
         int landmarkId = 1;
@@ -34,32 +37,31 @@ class testReviewService {
         String text = "Отличное место!";
         int userId = 10;
 
-        // 1. Пользователь существует (UserService возвращает ID)
+        // пользователь существует (возвращает ID)
         when(userService.checkUsers(username)).thenReturn(userId);
 
-        // 2. Отзыва нет (exists = false)
+        // отзыва нет (exists = false)
         when(jdbcTemplate.queryForObject(
                 eq("SELECT EXISTS(SELECT 1 FROM reviews WHERE user_id = ? AND landmark_id = ?)"),
                 any(Object[].class),
                 eq(Boolean.class)
         )).thenReturn(false);
 
-        // 3. Вызываем метод
         reviewService.addReview(landmarkId, username, rating, text);
 
-        // 4. Проверяем, что INSERT вызван
+        // Проверяем INSERT вызван
         verify(jdbcTemplate).update(
                 eq("INSERT INTO reviews (landmark_id, user_id, rating, text, created_at) VALUES (?, ?, ?, ?, NOW())"),
                 eq(landmarkId), eq(userId), eq(rating), eq(text)
         );
-        // Проверяем, что UPDATE НЕ вызывался
+        // Проверяем UPDATE НЕ вызывался
         verify(jdbcTemplate, never()).update(
                 contains("UPDATE reviews"),
                 anyInt(), anyString(), anyInt(), anyInt()
         );
     }
 
-    // ✅ Тест 2: Обновление существующего отзыва
+    //Тест - обновление существующего отзыва
     @Test
     void addReview_ExistingReview_ShouldUpdate() {
         int landmarkId = 1;
@@ -83,7 +85,7 @@ class testReviewService {
         );
     }
 
-    // ✅ Тест 3: Некорректная оценка (меньше 1)
+    //Тест - некорректная оценка
     @Test
     void addReview_RatingLessThan1_ShouldThrowException() {
         assertThrows(IllegalArgumentException.class, () -> {
@@ -93,7 +95,7 @@ class testReviewService {
         verify(jdbcTemplate, never()).update(anyString(), any(Object[].class));
     }
 
-    // ✅ Тест 4: Некорректная оценка (больше 5)
+    //Тест - некорректная оценка
     @Test
     void addReview_RatingGreaterThan5_ShouldThrowException() {
         assertThrows(IllegalArgumentException.class, () -> {
@@ -102,7 +104,7 @@ class testReviewService {
         verify(jdbcTemplate, never()).update(anyString(), any(Object[].class));
     }
 
-    // ✅ Тест 5: Отзыв без текста (должен сохраниться)
+    //Тест - отзыв без текста (должен сохраниться)
     @Test
     void addReview_EmptyText_ShouldSave() {
         int landmarkId = 1;
@@ -126,7 +128,7 @@ class testReviewService {
         );
     }
 
-    // ✅ Тест 6: Новый пользователь создается автоматически
+    //Тест - новый пользователь создается автоматически
     @Test
     void addReview_NewUser_ShouldCreateUserAndReview() {
         String username = "new_user";
@@ -135,7 +137,6 @@ class testReviewService {
         int rating = 5;
         String text = "Круто!";
 
-        // UserService создает нового пользователя
         when(userService.checkUsers(username)).thenReturn(newUserId);
         when(jdbcTemplate.queryForObject(
                 eq("SELECT EXISTS(SELECT 1 FROM reviews WHERE user_id = ? AND landmark_id = ?)"),

@@ -16,7 +16,10 @@ public class UserService {
     public UserService (DataSource dataSource) {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
-
+    //конструктор для тестов
+    public UserService(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
     public int checkUsers(String username){
         String findUser= "SELECT id FROM users WHERE username = ?";
         try {

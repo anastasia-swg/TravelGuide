@@ -13,7 +13,7 @@ import org.example.travelguide.model.*;
 public class ReviewService {
 
     private JdbcTemplate jdbcTemplate;
-    private final UserService userService;  // ← Добавляем зависимость
+    private final UserService userService;
 
     @Autowired
     public ReviewService(DataSource dataSource, UserService userService) {
@@ -21,10 +21,16 @@ public class ReviewService {
         this.userService = userService;
     }
 
+    //конструктор для тестов
+       public ReviewService(JdbcTemplate jdbcTemplate, UserService userService) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.userService = userService;
+    }
     public void addReview(int landmarkId, String user, int rating, String text) {
-
+        if (rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("Оценка должна быть от 1 до 5");
+        }
         int userId = userService.checkUsers(user);
-        // Проверяем существование через EXISTS
         String checkSql = "SELECT EXISTS(SELECT 1 FROM reviews WHERE user_id = ? AND landmark_id = ?)";
         Boolean exists = jdbcTemplate.queryForObject(
                 checkSql,
@@ -33,17 +39,15 @@ public class ReviewService {
         );
 
         if (exists != null && exists) {
-            // Обновляем существующий отзыв
             String sql = "UPDATE reviews SET rating = ?, text = ?, created_at = NOW() " +
                     "WHERE user_id = ? AND landmark_id = ?";
             jdbcTemplate.update(sql, rating, text, userId, landmarkId);
-            System.out.println("✅ Отзыв обновлен!");
+            System.out.println("Отзыв обновлен!");
         } else {
-            // Вставляем новый отзыв
             String sql = "INSERT INTO reviews (landmark_id, user_id, rating, text, created_at) " +
                     "VALUES (?, ?, ?, ?, NOW())";
             jdbcTemplate.update(sql, landmarkId, userId, rating, text);
-            System.out.println("✅ Отзыв добавлен!");
+            System.out.println("Отзыв добавлен!");
         }
     }
 

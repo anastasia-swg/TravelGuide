@@ -11,25 +11,25 @@ import java.util.List;
 @Service
 public class LandmarkService {
     private JdbcTemplate jdbcTemplate;
-    
-
-    public List<Landmark> sorted(String sql) {
-        return jdbcTemplate.query(sql, (rs, rowNum) ->
-                new Landmark(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("city"),
-                        rs.getDouble("latitude"),
-                        rs.getDouble("longitude"),
-                        rs.getDouble("avg_rating"),
-                        rs.getString("category")
-                )
-        );
-    }
 
     public List<Landmark> getLandmarksSortedByRating(int limit, String category) {
-        String sql = "SELECT * FROM get_landmarks_sorted_by_rating(" + limit + ")";
-        return jdbcTemplate.query(sql, (rs, rowNum) ->
+        String sql = "SELECT * FROM get_landmarks_sorted_by_rating(?, ?)";
+        return jdbcTemplate.query(sql, new Object[]{limit, category}, (rs, rowNum) ->
+                new Landmark(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("city"),
+                        rs.getDouble("latitude"),
+                        rs.getDouble("longitude"),
+                        rs.getDouble("avg_rating"),
+                        rs.getString("category")
+                )
+        );
+    }
+    // Сортировка по расстоянию с фильтром по категории
+    public List<Landmark> getLandmarksSortedByDistance(double lat, double lon, double radius, int limit, String category) {
+        String sql = "SELECT * FROM get_landmarks_sorted_by_distance(?, ?, ?, ?, ?)";
+        return jdbcTemplate.query(sql, new Object[]{lat, lon, radius, limit, category}, (rs, rowNum) ->
                 new Landmark(
                         rs.getInt("id"),
                         rs.getString("name"),
@@ -42,20 +42,6 @@ public class LandmarkService {
         );
     }
 
-    public List<Landmark> getLandmarksSortedByDistance(double lat, double lon, double radius, String category) {
-        String sql = "SELECT * FROM get_landmarks_sorted_by_distance(" + lat + ", " + lon + ", " + radius + ")";
-        return jdbcTemplate.query(sql, (rs, rowNum) ->
-                new Landmark(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("city"),
-                        rs.getDouble("latitude"),
-                        rs.getDouble("longitude"),
-                        rs.getDouble("avg_rating"),
-                        rs.getString("category")
-                )
-        );
-    }
     public Landmark getLandmarkById(int id) {
         String sql = "SELECT id, name, city, latitude, longitude, avg_rating FROM landmark WHERE id = ?";
         try {
@@ -74,6 +60,20 @@ public class LandmarkService {
             return null; // Если не найдено
         }
     }
+    public List<Landmark> sorted(String sql) {
+        return jdbcTemplate.query(sql, (rs, rowNum) ->
+                new Landmark(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("city"),
+                        rs.getDouble("latitude"),
+                        rs.getDouble("longitude"),
+                        rs.getDouble("avg_rating"),
+                        rs.getString("category")
+                )
+        );
+    }
+
 
     //конструктор
     @Autowired
@@ -81,4 +81,8 @@ public class LandmarkService {
         this.jdbcTemplate = new JdbcTemplate(dataSource);
     }
 
+    //конструктор для тестов
+    public LandmarkService(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
 }

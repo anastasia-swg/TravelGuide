@@ -103,6 +103,16 @@
 
     <!-- Форма для "Ближайшие" -->
     <div id="nearbyForm" style="display:none;" class="input-group">
+        <label>Категория:</label>
+        <select id="topCategoryNearby" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+            <option value="">Все категории</option>
+            <option value="Музей">Музей</option>
+            <option value="Парк">Парк</option>
+            <option value="Памятник">Памятник</option>
+            <option value="Собор">Собор</option>
+            <option value="Улица">Улица</option>
+            <option value="Здание">Здание</option>
+        </select>
         <label>Широта:</label>
         <input type="number" id="lat" value="59.94" step="0.0001">
         <label>Долгота:</label>
@@ -113,30 +123,40 @@
         <button onclick="loadNearbyWithParams()">Найти</button>
     </div>
 
+
     <div id="topForm" style="display:none;" class="input-group">
+        <label>Категория:</label>
+        <select id="topCategory" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px;">
+            <option value="">Все категории</option>
+            <option value="Музей">Музей</option>
+            <option value="Парк">Парк</option>
+            <option value="Памятник">Памятник</option>
+            <option value="Собор">Собор</option>
+            <option value="Улица">Улица</option>
+            <option value="Здание">Здание</option>
+        </select>
         <label>Количество:</label>
         <input type="number" id="topCount" value="5" min="1" max="100">
         <button onclick="loadTopRatedWithCount()">Показать достопримечательности</button>
     </div>
 
-    <!-- Форма для "Отзывы" -->
+    <!--Отзывы-->
     <div id="reviewsForm" style="display:none;" class="input-group">
         <label>ID достопримечательности:</label>
         <input type="number" id="reviewLandmarkId" value="1">
         <button onclick="loadReviewsWithParams()">Показать отзывы</button>
     </div>
 
-    <!-- Форма для "Информация о месте" -->
+    <!-- Информация о месте-->
     <div id="infoForm" style="display:none;" class="input-group">
         <label>ID достопримечательности:</label>
         <input type="number" id="infoLandmarkId" value="1">
         <button onclick="loadLandmarkInfoWithParams()">Показать</button>
     </div>
-    <!-- Форма для добавления отзыва -->
+    <!--Для добавления отзыва -->
     <div id="addReviewForm" style="background: #fef9e7; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #f1c40f;">
-        <h2 style="color: #2c3e50; margin-bottom: 15px;">✏Оставить отзыв</h2>
+        <h2 style="color: #2c3e50; margin-bottom: 15px;">Оставить отзыв</h2>
 
-        <!-- Строка с полями ввода (имя, ID места, оценка) -->
         <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; align-items: center;">
             <div>
                 <label style="font-weight: bold; margin-right: 5px;">Ваше имя:</label>
@@ -152,32 +172,263 @@
             </div>
         </div>
 
-        <!-- Блок с текстом отзыва -->
+        <!-- Текст отзыва -->
         <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
-            <label style="font-weight: bold;">💬 Текст отзыва:</label>
+            <label style="font-weight: bold;">Текст отзыва:</label>
             <textarea id="reviewText" rows="3" placeholder="Напишите ваш отзыв..." style="padding: 10px; border-radius: 4px; border: 1px solid #ddd; font-family: inherit; resize: vertical;"></textarea>
         </div>
 
-        <!-- Кнопка отправки -->
-        <button onclick="submitReview()" style="background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: background 0.3s;">📤 Сохранить отзыв</button>
+        <button onclick="submitReview()" style="background: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: background 0.3s;">Сохранить отзыв</button>
 
-        <!-- Результат отправки -->
         <div id="reviewResult" style="margin-top: 10px;"></div>
+    </div>
+
+    <div id="result">
+        <p class="loading">Нажмите на кнопку, чтобы загрузить данные</p>
     </div>
 
 </div>
 
+</div>
+
 <script>
-    // ═══════════════════════════════════════════
-    // 5. ДОБАВЛЕНИЕ ОТЗЫВА (POST)
-    // ═══════════════════════════════════════════
+    // Топ по рейтингу
+    function loadTopRated() {
+        toggleForm('topForm');
+        document.getElementById('result').innerHTML = '<p class="loading">Выберите категорию и нажмите "Показать достопримечательности"</p>';
+    }
+
+    function loadTopRatedWithCount() {
+        const limit = document.getElementById('topCount').value || 10;
+        const category = document.getElementById('topCategory').value;
+
+        showLoading();
+        let url = `/api/landmarks/top-rated?limit=${limit}`;
+        if (category) {
+            url += `&category=${encodeURIComponent(category)}`;
+        }
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ошибка сервера: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Данные получены:", data);
+                if (data.length === 0) {
+                    showMessage('Достопримечательностей не найдено');
+                    return;
+                }
+                let html = `<h2>Топ-${limit} по рейтингу${category ? ' (Категория: ' + category + ')' : ''}</h2>`;
+                data.forEach((lm, index) => {
+                    html += `
+                    <div class="card">
+                        <h3>${index + 1}. ${lm.name}</h3>
+                        <p>${lm.city}</p>
+                        <p class="rating">${lm.rating || 'Нет оценок'}</p>
+                    </div>
+                `;
+                });
+                document.getElementById('result').innerHTML = html;
+            })
+            .catch(error => {
+                showError(error);
+            });
+    }
+
+    function loadNearby() {
+        toggleForm('nearbyForm');
+        document.getElementById('result').innerHTML = '<p class="loading">Введите параметры и нажмите "Найти"</p>';
+    }
+
+    function getUserLocation() {
+        if (!navigator.geolocation) {
+            alert('Браузер не поддерживает геолокацию.\nВведите координаты вручную.');
+            return;
+        }
+
+        document.getElementById('result').innerHTML = `
+            <p class="loading">Определение местоположения...</p>
+            <p style="font-size:12px; color:#999;">разрешите доступ к геолокации в браузере</p>
+        `;
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                console.log("Координаты получены:", position.coords);
+                const lat = position.coords.latitude.toFixed(6);
+                const lon = position.coords.longitude.toFixed(6);
+                const accuracy = position.coords.accuracy;
+
+                document.getElementById('lat').value = lat;
+                document.getElementById('lon').value = lon;
+
+                let accuracyMsg = accuracy > 100 ?
+                    `(точность ~${Math.round(accuracy)} м)` :
+                    `(высокая точность)`;
+
+                document.getElementById('result').innerHTML = `
+                    <p style="color: #27ae60;">Местоположение определено!</p>
+                    <p>Широта: ${lat}, Долгота: ${lon} ${accuracyMsg}</p>
+                    <p style="font-size:14px; color:#555;">Нажмите "Найти", чтобы увидеть ближайшие места</p>
+                `;
+            },
+            function(error) {
+                console.error("Ошибка геолокации:", error);
+                let errorMessage = '';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        errorMessage = 'Доступ к геолокации запрещен. Разрешите доступ в настройках браузера.';
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        errorMessage = 'Не удалось определить местоположение. Проверьте сигнал GPS.';
+                        break;
+                    case error.TIMEOUT:
+                        errorMessage = 'Время ожидания истекло. Попробуйте еще раз.';
+                        break;
+                    default:
+                        errorMessage = 'Ошибка геолокации: ' + error.message;
+                }
+                document.getElementById('result').innerHTML = `
+                    <p class="error">${errorMessage}</p>
+                    <p style="font-size:14px; color:#999;">Введите координаты вручную </p>
+                `;
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            }
+        );
+    }
+
+    function loadNearbyWithParams() {
+        const lat = document.getElementById('lat').value;
+        const lon = document.getElementById('lon').value;
+        const radius = document.getElementById('radius').value;
+        const category = document.getElementById('topCategoryNearby').value;
+
+        showLoading();
+        let url = `/api/landmarks/nearby?lat=${lat}&lon=${lon}&radius=${radius}`;
+        if (category) {
+            url += `&category=${encodeURIComponent(category)}`;
+        }
+
+
+        fetch(url)
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                if (data.length === 0) {
+                    showMessage('В радиусе ' + radius + ' км ничего не найдено');
+                    return;
+                }
+                let html = `<h2>Ближайшие к (${lat}, ${lon}) в радиусе ${radius} км${category ? ' (Категория: ' + category + ')' : ''}</h2>`;
+                data.forEach((lm) => {
+                    const distance = lm.distance ? lm.distance.toFixed(2) : '?';
+                    html += `
+                        <div class="card">
+                            <h3>${lm.name}</h3>
+                            <p>${lm.city}</p>
+                            <p>Расстояние: ${distance} км</p>
+                            <p class="rating">${lm.rating || 'Нет оценок'}</p>
+                        </div>
+                    `;
+                });
+                document.getElementById('result').innerHTML = html;
+            })
+            .catch(error => {
+                showError(error);
+            });
+    }
+
+    // Отзывы
+    function loadReviews() {
+        toggleForm('reviewsForm');
+        document.getElementById('result').innerHTML = '<p class="loading">Введите ID и нажмите "Показать отзывы"</p>';
+    }
+
+    function loadReviewsWithParams() {
+        const id = document.getElementById('reviewLandmarkId').value;
+
+        showLoading();
+        fetch(`/api/reviews/landmark/${id}`)
+            .then(response => {
+                return response.json();
+            })
+            .then(data => {
+                if (data.length === 0) {
+                    showMessage('Отзывов о месте с ID ' + id + ' пока нет.');
+                    return;
+                }
+                let html = `<h2>Отзывы о достопримечательности (ID: ${id})</h2>`;
+                data.forEach((review) => {
+                    const text = review.text && review.text.trim() ? review.text : 'Без текста';
+                    const username = review.username || 'Аноним';
+                    const createdAt = review.createdAt ? new Date(review.createdAt).toLocaleString() : '—';
+                    html += `
+                        <div class="card">
+                            <h3>${username}</h3>
+                            <p class="rating">${review.rating}/5</p>
+                            <p>${text}</p>
+                            <p style="font-size:12px; color:#999;">${createdAt}</p>
+                        </div>
+                    `;
+                });
+                document.getElementById('result').innerHTML = html;
+            })
+            .catch(error => {
+                showError(error);
+            });
+    }
+
+    //информация о месте
+    function loadLandmarkInfo() {
+        toggleForm('infoForm');
+        document.getElementById('result').innerHTML = '<p class="loading">Введите ID и нажмите "Показать"</p>';
+    }
+
+    function loadLandmarkInfoWithParams() {
+        const id = document.getElementById('infoLandmarkId').value;
+
+        showLoading();
+        fetch(`/api/landmarks/${id}`)
+            .then(response => {
+                console.log("Ответ получен, status:", response.status);
+                if (!response.ok) {
+                    throw new Error('Достопримечательность не найдена (404)');
+                }
+                return response.json();
+            })
+            .then(lm => {
+                console.log("Данные получены:", lm);
+                let html = `
+                    <h2>Информация о достопримечательности</h2>
+                    <div class="card">
+                        <h3>${lm.name}</h3>
+                        <p>Город: ${lm.city}</p>
+                        <p>Координаты: ${lm.latitude}, ${lm.longitude}</p>
+                        <p class="rating">Рейтинг: ${lm.rating || 'Нет оценок'}</p>
+                    </div>
+                `;
+                document.getElementById('result').innerHTML = html;
+            })
+            .catch(error => {
+                showError(error);
+            });
+    }
+
+    //добавление отзыва
     function submitReview() {
+
         const username = document.getElementById('reviewUsername').value.trim();
         const landmarkId = document.getElementById('reviewLandmarkIdInput').value;
         const rating = document.getElementById('reviewRating').value;
         const text = document.getElementById('reviewText').value.trim();
 
-        // Валидация
+
         if (!username) {
             document.getElementById('reviewResult').innerHTML = '<p style="color: #e74c3c;">Введите ваше имя</p>';
             return;
@@ -191,18 +442,15 @@
             return;
         }
 
-        // Формируем JSON для отправки (как в Postman)
         const reviewData = {
             username: username,
             landmarkId: parseInt(landmarkId),
             rating: parseInt(rating),
-            text: text || null  // Если пусто — передаём null
+            text: text || null
         };
 
-        // Показываем статус отправки
         document.getElementById('reviewResult').innerHTML = '<p style="color: #3498db;">Сохранение...</p>';
 
-        // Отправляем POST-запрос
         fetch('/api/reviews', {
             method: 'POST',
             headers: {
@@ -220,241 +468,22 @@
             })
             .then(message => {
                 document.getElementById('reviewResult').innerHTML = `<p style="color: #27ae60;">${message}</p>`;
-                // Очищаем поле текста (оценку и имя оставляем)
                 document.getElementById('reviewText').value = '';
-                // Если нужно — обновляем список отзывов
-                // loadReviewsWithParams(); // можно раскомментировать, если хочешь автообновление
             })
             .catch(error => {
                 document.getElementById('reviewResult').innerHTML = `<p style="color: #e74c3c;">Ошибка: ${error.message}</p>`;
-                console.error('Ошибка:', error);
             });
     }
-    // ═══════════════════════════════════════════
-    // 1. ТОП ПО РЕЙТИНГУ
-    // ═══════════════════════════════════════════
-    function loadTopRatedWithCount() {
-        const count = document.getElementById('topCount').value;
-        if (!count || count < 1) {
-            showMessage('⚠️ Введите корректное количество (от 1)');
-            return;
-        }
-        showLoading();
-        fetch(`/api/landmarks/top-rated?limit=${count}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length === 0) {
-                    showMessage('⚠️ Достопримечательностей не найдено');
-                    return;
-                }
-                let html = `<h2>Топ-${count} по рейтингу</h2>`;
-                data.forEach((lm, index) => {
-                    html += `
-                    <div class="card">
-                        <h3>${index + 1}. ${lm.name}</h3>
-                        <p>${lm.city}</p>
-                        <p class="rating"> ${lm.rating || 'Нет оценок'}</p>
-                    </div>
-                `;
-                });
-                document.getElementById('result').innerHTML = html;
-            })
-            .catch(error => showError(error));
-    }
 
-    // Оригинальная функция loadTopRated() теперь загружает стандартные 10
-    function loadTopRated() {
-        // Показываем форму для ввода количества
-        toggleForm('topForm');
-        document.getElementById('result').innerHTML = '<p class="loading">Введите количество"</p>';
-    }
 
-    // ═══════════════════════════════════════════
-    // 2. БЛИЖАЙШИЕ
-    // ═══════════════════════════════════════════
-    function loadNearby() {
-        toggleForm('nearbyForm');
-        document.getElementById('result').innerHTML = '<p class="loading">Введите параметры и нажмите "Найти"</p>';
-    }
-
-    function getUserLocation() {
-        // Проверяем, поддерживает ли браузер геолокацию
-        if (!navigator.geolocation) {
-            alert('Браузер не поддерживает геолокацию.\nВведите координаты вручную.');
-            return;
-        }
-
-        // Показываем статус
-        document.getElementById('result').innerHTML = `
-        <p class="loading">Определение местоположения...</p>
-        <p style="font-size:12px; color:#999;">Пожалуйста, разрешите доступ к геолокации в браузере</p>
-    `;
-
-        // Запрашиваем геолокацию
-        navigator.geolocation.getCurrentPosition(
-            // ✅ Успех: получаем координаты
-            function(position) {
-                const lat = position.coords.latitude.toFixed(6);
-                const lon = position.coords.longitude.toFixed(6);
-                const accuracy = position.coords.accuracy; // Точность в метрах
-
-                // Заполняем поля формы
-                document.getElementById('lat').value = lat;
-                document.getElementById('lon').value = lon;
-
-                // Показываем сообщение об успехе
-                let accuracyMsg = accuracy > 100 ?
-                    `(точность ~${Math.round(accuracy)} м)` :
-                    `(высокая точность)`;
-
-                document.getElementById('result').innerHTML = `
-                <p style="color: #27ae60;">Местоположение определено!</p>
-                <p>Широта: ${lat}, Долгота: ${lon} ${accuracyMsg}</p>
-                <p style="font-size:14px; color:#555;">Нажмите "Найти", чтобы увидеть ближайшие места</p>
-            `;
-
-                // 👇 Опционально: автоматически выполнить поиск
-                // setTimeout(() => loadNearbyWithParams(), 500);
-            },
-            // ❌ Ошибка: пользователь запретил или что-то пошло не так
-            function(error) {
-                let errorMessage = '';
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage = 'Доступ к геолокации запрещен.\nРазрешите доступ в настройках браузера.';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage = 'Не удалось определить местоположение.\nПроверьте сигнал GPS или введите координаты вручную.';
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage = 'Время ожидания истекло.\nПопробуйте еще раз или введите координаты вручную.';
-                        break;
-                    default:
-                        errorMessage = 'Ошибка геолокации: ' + error.message;
-                }
-                document.getElementById('result').innerHTML = `
-                <p class="error">${errorMessage}</p>
-                <p style="font-size:14px; color:#999;">Введите координаты вручную и нажмите "Найти"</p>
-            `;
-                console.error('Ошибка геолокации:', error);
-            },
-            // ⚙️ Опции запроса
-            {
-                enableHighAccuracy: true,   // Использовать GPS если доступен
-                timeout: 10000,             // Таймаут 10 секунд
-                maximumAge: 60000           // Кешировать на 1 минуту
-            }
-        );
-    }
-
-    function loadNearbyWithParams() {
-        const lat = document.getElementById('lat').value;
-        const lon = document.getElementById('lon').value;
-        const radius = document.getElementById('radius').value;
-
-        showLoading();
-        fetch(`/api/landmarks/nearby?lat=${lat}&lon=${lon}&radius=${radius}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length === 0) {
-                    showMessage('⚠️ В радиусе ' + radius + ' км ничего не найдено');
-                    return;
-                }
-                let html = `<h2>Ближайшие в радиусе ${radius} км</h2>`;
-                data.forEach((lm) => {
-                    html += `
-                            <div class="card">
-                                <h3>${lm.name}</h3>
-                                <p>${lm.city}</p>
-                                <p class="rating">${lm.rating ||  'Нет оценок'}</p>
-                            </div>
-                        `;
-                });
-                document.getElementById('result').innerHTML = html;
-            })
-            .catch(error => showError(error));
-    }
-
-    // ═══════════════════════════════════════════
-    // 3. ОТЗЫВЫ
-    // ═══════════════════════════════════════════
-    function loadReviews() {
-        toggleForm('reviewsForm');
-        document.getElementById('result').innerHTML = '<p class="loading">Введите ID и нажмите "Показать отзывы"</p>';
-    }
-
-    function loadReviewsWithParams() {
-        const id = document.getElementById('reviewLandmarkId').value;
-        showLoading();
-        fetch(`/api/reviews/landmark/${id}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length === 0) {
-                    showMessage('Отзывов о месте с ID ' + id + ' пока нет.');
-                    return;
-                }
-                let html = `<h2>Отзывы о достопримечательности (ID: ${id})</h2>`;
-                data.forEach((review) => {
-                    const text = review.text && review.text.trim() ? review.text : 'Без текста';
-                    const username = review.username || 'Аноним';
-                    const createdAt = review.createdAt ? new Date(review.createdAt).toLocaleString() : '—';
-                    html += `
-                            <div class="card">
-                                <h3>${username}</h3>
-                                <p class="rating">${review.rating}/5</p>
-                                <p>${text}</p>
-                                <p style="font-size:12px; color:#999;">${createdAt}</p>
-                            </div>
-                        `;
-                });
-                document.getElementById('result').innerHTML = html;
-            })
-            .catch(error => showError(error));
-    }
-
-    // ═══════════════════════════════════════════
-    // 4. ИНФОРМАЦИЯ О МЕСТЕ
-    // ═══════════════════════════════════════════
-    function loadLandmarkInfo() {
-        toggleForm('infoForm');
-        document.getElementById('result').innerHTML = '<p class="loading">ℹВведите ID и нажмите "Показать"</p>';
-    }
-
-    function loadLandmarkInfoWithParams() {
-        const id = document.getElementById('infoLandmarkId').value;
-        showLoading();
-        fetch(`/api/landmarks/${id}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Достопримечательность не найдена (404)');
-                }
-                return response.json();
-            })
-            .then(lm => {
-                let html = `
-                        <h2>Информация о достопримечательности</h2>
-                        <div class="card">
-                            <h3>${lm.name}</h3>
-                            <p>Город: ${lm.city}</p>
-                            <p>Координаты: ${lm.latitude}, ${lm.longitude}</p>
-                            <p class="rating">Рейтинг: ${lm.rating ||  'Нет оценок'}</p>
-                        </div>
-                    `;
-                document.getElementById('result').innerHTML = html;
-            })
-            .catch(error => showError(error));
-    }
-
-    // ═══════════════════════════════════════════
-    // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-    // ═══════════════════════════════════════════
     function toggleForm(formId) {
-        // Скрываем все формы
         document.querySelectorAll('.input-group').forEach(form => {
             form.style.display = 'none';
         });
-        // Показываем нужную
-        document.getElementById(formId).style.display = 'flex';
+        const target = document.getElementById(formId);
+        if (target) {
+            target.style.display = 'flex';
+        }
     }
 
     function showLoading() {
@@ -467,16 +496,12 @@
 
     function showError(error) {
         document.getElementById('result').innerHTML = `
-                <p class="error">Ошибка: ${error.message}</p>
-                <p style="font-size:12px; color:#999;">Убедитесь, что сервер запущен</p>
-            `;
-        console.error(error);
+            <p class="error">Ошибка: ${error.message}</p>
+            <p style="font-size:12px; color:#999;">Убедитесь, что сервер запущен</p>
+        `;
     }
 
-    // Автоматически загружаем топ при открытии страницы
-    window.onload = function() {
-        loadTopRated();
-    };
+
 </script>
 </body>
 </html>

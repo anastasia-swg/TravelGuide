@@ -1,5 +1,7 @@
 
+import org.example.travelguide.service.LandmarkService;
 import org.example.travelguide.service.UserService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,62 +19,56 @@ class testUserService {
     @Mock
     private JdbcTemplate jdbcTemplate;
 
-    @InjectMocks
-    private UserService userService;
+    private  UserService userService;
 
-    // ✅ Тест 1: Пользователь существует — возвращаем его ID
+    @BeforeEach
+    void setUp() {
+        userService = new UserService(jdbcTemplate);
+    }
+    //Тест - пользователь существует возвращаем его id
     @Test
     void checkUsers_UserExists_ShouldReturnExistingId() {
         String username = "alex";
         int expectedId = 5;
 
-        // Настраиваем мок: при запросе ID возвращаем 5
         when(jdbcTemplate.queryForObject(
                 eq("SELECT id FROM users WHERE username = ?"),
                 any(Object[].class),
                 eq(Integer.class)
         )).thenReturn(expectedId);
 
-        // Вызываем метод
         int actualId = userService.checkUsers(username);
 
-        // Проверяем
         assertEquals(expectedId, actualId);
-        // Проверяем, что INSERT не вызывался
         verify(jdbcTemplate, never()).update(anyString(), any(Object[].class));
     }
 
-    // ✅ Тест 2: Пользователь НЕ существует — создаем нового
+    //Тест- пользователь не существует — создаем нового
     @Test
     void checkUsers_UserNotExists_ShouldCreateNewUser() {
         String username = "new_user";
 
-        // 1. При поиске — выбрасываем исключение (пользователь не найден)
         when(jdbcTemplate.queryForObject(
                 eq("SELECT id FROM users WHERE username = ?"),
                 any(Object[].class),
                 eq(Integer.class)
         )).thenThrow(new RuntimeException("Not found"));
 
-        // 2. При подсчете MAX(id) — возвращаем 10
         when(jdbcTemplate.queryForObject(
                 eq("SELECT COALESCE(MAX(id), 0) + 1 FROM users"),
                 eq(Integer.class)
         )).thenReturn(10);
 
-        // Вызываем метод
         int actualId = userService.checkUsers(username);
 
-        // Проверяем
         assertEquals(10, actualId);
-        // Проверяем, что INSERT вызван с правильными параметрами
         verify(jdbcTemplate).update(
                 eq("INSERT INTO users (id, username) VALUES (?, ?)"),
                 eq(10), eq(username)
         );
     }
 
-    // ✅ Тест 3: Пользователь с пустым именем — создаем
+    // тест - пользователь с пустым именем — создаем
     @Test
     void checkUsers_EmptyUsername_ShouldCreate() {
         String username = "";
