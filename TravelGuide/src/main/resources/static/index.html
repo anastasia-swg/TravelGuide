@@ -160,7 +160,7 @@
         <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; align-items: center;">
             <div>
                 <label style="font-weight: bold; margin-right: 5px;">Ваше имя:</label>
-                <input type="text" id="reviewUsername" value="alex" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 150px;">
+                <input type="text" id="reviewUsername" value="John Doe" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 150px;">
             </div>
             <div>
                 <label style="font-weight: bold; margin-right: 5px;">ID места:</label>
@@ -410,6 +410,7 @@
                         <h3>${lm.name}</h3>
                         <p>Город: ${lm.city}</p>
                         <p>Координаты: ${lm.latitude}, ${lm.longitude}</p>
+                         <p>Категория: ${lm.category}</p>
                         <p class="rating">Рейтинг: ${lm.rating || 'Нет оценок'}</p>
                     </div>
                 `;

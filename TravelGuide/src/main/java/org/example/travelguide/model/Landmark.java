@@ -21,9 +21,7 @@ public class Landmark {
 
     public Landmark() {}
 
-    public void setRating(){
-        //дописать от триггера из базы данных
-    }
+
     public void printAll(){
         System.out.println("id-" + this.id+
                 "        \ncity-" + this.city+

@@ -43,7 +43,7 @@ public class LandmarkService {
     }
 
     public Landmark getLandmarkById(int id) {
-        String sql = "SELECT id, name, city, latitude, longitude, avg_rating FROM landmark WHERE id = ?";
+        String sql = "SELECT id, name, city, latitude, longitude, avg_rating, category FROM landmark WHERE id = ?";
         try {
             return jdbcTemplate.queryForObject(sql, new Object[]{id}, (rs, rowNum) ->
                     new Landmark(

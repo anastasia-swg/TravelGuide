@@ -17,7 +17,6 @@ public class ReviewController {
     private ReviewService reviewService;
 
     // POST /api/reviews
-    // Body: { "landmarkId": 1, "userId": 1, "rating": 5, "text": "Круто!" }
     @PostMapping
     public String addReview(@RequestBody Map<String, Object> request) {
         int landmarkId = (int) request.get("landmarkId");

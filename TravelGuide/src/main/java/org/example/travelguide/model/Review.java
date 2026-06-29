@@ -22,7 +22,6 @@ public class Review {
         this.username = username;
     }
 
-    // Геттеры
     public int getId() { return id; }
     public int getLandmarkId() { return landmarkId; }
     public int getUserId() { return userId; }
