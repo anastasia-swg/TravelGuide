@@ -58,21 +58,20 @@ public class LandmarkRepository {
                 return;
             }
 
-            System.out.println("\n📋 РЕЗУЛЬТАТЫ СОРТИРОВКИ:");
-            System.out.println("========================================");
+            System.out.println("\nРЕЗУЛЬТАТЫ СОРТИРОВКИ:");
 
             if (distanceSortedLandmark.isEmpty()) {
-                System.out.println("⚠️ Достопримечательностей не найдено.");
+                System.out.println("Достопримечательностей не найдено.");
             } else {
                 for (Landmark lm : distanceSortedLandmark) {
                     lm.printAll();
                     System.out.println("----------------------------------------");
                 }
-                System.out.println("📊 Всего найдено: " + distanceSortedLandmark.size());
+                System.out.println("Всего найдено: " + distanceSortedLandmark.size());
             }
 
         } catch (Exception ex) {
-            System.out.println("❌ Ошибка сортировки: " + ex.getMessage());
+            System.out.println("Ошибка сортировки: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
@@ -83,52 +82,47 @@ public class LandmarkRepository {
         int landmarkId = in.nextInt();
         in.nextLine();
 
-        System.out.println("\n═══════════════════════════════════════");
-        System.out.println("  📖 ОТЗЫВЫ О ДОСТОПРИМЕЧАТЕЛЬНОСТИ (ID: " + landmarkId + ")");
-        System.out.println("═══════════════════════════════════════");
+        System.out.println("ОТЗЫВЫ О ДОСТОПРИМЕЧАТЕЛЬНОСТИ (ID: " + landmarkId + ")");
 
         try {
             Landmark landmark = landmarkService.getLandmarkById(landmarkId);
 
             if (landmark == null) {
-                System.out.println("❌ Достопримечательность с ID " + landmarkId + " не найдена.");
+                System.out.println("Достопримечательность с ID " + landmarkId + " не найдена.");
                 return;
             }
 
-            System.out.println("🏛️  " + landmark.getName() + " (" + landmark.getCity() + ")");
-            System.out.println("⭐ Средний рейтинг: " + landmark.getRating() + "/5");
+            System.out.println("" + landmark.getName() + " (" + landmark.getCity() + ")");
+            System.out.println("Средний рейтинг: " + landmark.getRating() + "/5");
             System.out.println("----------------------------------------");
 
             List<Review> reviews = reviewService.getReviewsByLandmark(landmarkId);
 
             if (reviews.isEmpty()) {
-                System.out.println("⚠️ Отзывов об этой достопримечательности пока нет.");
-                System.out.println("   Будьте первым, кто оставит отзыв! ✍️");
+                System.out.println("Отзывов об этой достопримечательности пока нет.");
             } else {
-                System.out.println("📊 Всего отзывов: " + reviews.size());
-                System.out.println("═══════════════════════════════════════");
+                System.out.println("Всего отзывов: " + reviews.size());
 
                 int count = 1;
                 for (Review review : reviews) {
-                    System.out.println("\n📝 Отзыв #" + count);
-                    System.out.println("   👤 Пользователь: " + review.getUsername());
-                    System.out.println("   ⭐ Оценка: " + review.getRating() + "/5");
+                    System.out.println("\nОтзыв #" + count);
+                    System.out.println("   Пользователь: " + review.getUsername());
+                    System.out.println("   Оценка: " + review.getRating() + "/5");
 
                     String text = review.getText();
                     if (text != null && !text.trim().isEmpty()) {
-                        System.out.println("   💬 Текст: " + text);
+                        System.out.println("   Текст: " + text);
                     } else {
-                        System.out.println("   💬 Без текстового комментария");
+                        System.out.println("   Без текстового комментария");
                     }
 
-                    System.out.println("   📅 Дата: " + review.getCreatedAt());
-                    System.out.println("----------------------------------------");
+                    System.out.println("   Дата: " + review.getCreatedAt());
                     count++;
                 }
             }
 
         } catch (Exception e) {
-            System.out.println("❌ Ошибка при получении отзывов: " + e.getMessage());
+            System.out.println("Ошибка при получении отзывов: " + e.getMessage());
             e.printStackTrace();
         }
     }
