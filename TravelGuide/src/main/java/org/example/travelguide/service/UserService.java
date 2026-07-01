@@ -28,17 +28,13 @@ public class UserService {
                     new Object[]{username},
                     Integer.class
             );
-            // Если нашли — возвращаем ID
             if (userId != null) {
                 return userId;
             }
         } catch (Exception e) {
-            // Пользователь не найден — продолжаем
             System.out.println(" Пользователь '" + username + "' не найден, создаем нового...");
         }
 
-        // 2. Если не нашли — создаем нового
-        // Получаем следующий ID
         String countSql = "SELECT COALESCE(MAX(id), 0) + 1 FROM users";
         int newId = jdbcTemplate.queryForObject(countSql, Integer.class);
 
@@ -49,8 +45,6 @@ public class UserService {
         System.out.println("Создан новый пользователь: " + username + " (ID: " + newId + ")");
         return newId;
     }
-    // Проверяет, существует ли пользователь, и возвращает его ID.
-    // Если не существует — создает нового и возвращает новый ID.
 
 
 

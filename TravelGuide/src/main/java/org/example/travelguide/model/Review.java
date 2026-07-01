@@ -9,7 +9,7 @@ public class Review {
     private int rating;
     private String text;
     private LocalDateTime createdAt;
-    private String username; // Имя пользователя из JOIN
+    private String username;
 
     public Review( int landmarkId, int userId, int rating, String text,
                    LocalDateTime createdAt, String username) {

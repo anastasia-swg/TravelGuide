@@ -24,11 +24,10 @@ class testLandmarkService {
     @Mock
     private JdbcTemplate jdbcTemplate;
 
-    private LandmarkService landmarkService;  // ← Теперь создаем вручную
+    private LandmarkService landmarkService;
 
     @BeforeEach
     void setUp() {
-        // Создаем сервис с моком JdbcTemplate
         landmarkService = new LandmarkService(jdbcTemplate);
     }
 

@@ -327,12 +327,11 @@
                 }
                 let html = `<h2>Ближайшие к (${lat}, ${lon}) в радиусе ${radius} км${category ? ' (Категория: ' + category + ')' : ''}</h2>`;
                 data.forEach((lm) => {
-                    const distance = lm.distance ? lm.distance.toFixed(2) : '?';
                     html += `
                         <div class="card">
                             <h3>${lm.name}</h3>
                             <p>${lm.city}</p>
-                            <p>Расстояние: ${distance} км</p>
+                            <p>Категория: ${lm.category}</p>
                             <p class="rating">${lm.rating || 'Нет оценок'}</p>
                         </div>
                     `;
